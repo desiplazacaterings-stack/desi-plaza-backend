@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const { StatusCodes } = require('http-status-codes');
-const { BadRequestError, UnauthenticatedError } = require('../errors/custom-error');
+const { BadRequestError, UnauthenticatedError } = require('../errors');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
 
