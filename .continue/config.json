@@ -1,0 +1,11 @@
+{
+  "models": [
+    {
+      "title": "GPT-4.1",
+      "provider": "openai",
+      "model": "gpt-4.1",
+      "apiKey": "${sk-proj-uhS-WDTSEplj7COC-58z7LLONMbaKb8KIhg2nKutYlFY2QQixVnzNWaMEroVTZ8INd9V40eiw6T3BlbkFJWpQ-WudBBFmZZFfnmHOUssbVe6JSq-QewrJ6Act8gp5LD35bygqORtfN2ER2dGPmBKDA6Fd6UAI_API_KEY}"
+    }
+  ],
+  "defaultModel": "GPT-4.1"
+}
