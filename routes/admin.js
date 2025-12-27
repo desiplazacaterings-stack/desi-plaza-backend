@@ -1,0 +1,28 @@
+const express = require('express');
+const router = express.Router();
+const adminController = require('../controllers/adminController');
+const { authenticateUser } = require('../middleware/auth');
+const { requireAdmin } = require('../middleware/authorization');
+const { asyncHandler } = require('../utils/asyncHandler');
+
+// All routes require authentication and admin role
+router.use(authenticateUser);
+router.use(requireAdmin);
+
+// User management routes
+router.get('/users', asyncHandler(adminController.getAllUsers));
+router.post('/users', asyncHandler(adminController.createUser));
+router.get('/users/:id', asyncHandler(adminController.getUser));
+router.patch('/users/:id', asyncHandler(adminController.updateUser));
+router.delete('/users/:id', asyncHandler(adminController.deleteUser));
+
+// User status and role management
+router.patch('/users/:id/status', asyncHandler(adminController.changeUserStatus));
+router.patch('/users/:id/role', asyncHandler(adminController.changeUserRole));
+router.patch('/users/:id/reset-password', asyncHandler(adminController.resetUserPassword));
+
+// Statistics and information routes
+router.get('/statistics/users', asyncHandler(adminController.getUserStatistics));
+router.get('/roles/available', asyncHandler(adminController.getAvailableRoles));
+
+module.exports = router;
