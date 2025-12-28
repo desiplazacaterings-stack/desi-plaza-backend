@@ -11,10 +11,7 @@ async function seedDatabase() {
     }
 
     console.log('Connecting to MongoDB...');
-    await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(mongoURI);
     console.log('✓ MongoDB connected');
 
     console.log('Clearing existing items...');
