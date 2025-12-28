@@ -1,31 +1,31 @@
 {
-  "name": "backend",
+  "name": "desi-plaza-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Catering business backend API",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "seed": "node seed.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "dev": "node index.js"
   },
-  "keywords": [],
+  "keywords": [
+    "catering",
+    "api",
+    "express",
+    "mongodb"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.2.1",
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.0.2",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.11"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.11"
   }
 }
