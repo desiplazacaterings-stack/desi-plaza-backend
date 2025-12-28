@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js",
-    "seed": "node seedMenu.js"
+    "seed": "node seedMenu.js",
+    "seed:test": "node seedTestData.js"
   },
   "keywords": [
     "catering",
