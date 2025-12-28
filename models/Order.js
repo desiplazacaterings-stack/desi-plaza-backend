@@ -31,14 +31,32 @@ const orderSchema = new mongoose.Schema({
   items: [orderItemSchema],
   subtotal: { type: Number },
   tax: { type: Number },
+  salesTax: { type: Number, default: 0 },
+  serviceCharge: { type: Number, default: 0 },
+  discount: { type: Number, default: 0 },
   total: { type: Number },
   totalAmount: { type: Number },
   advance: { type: Number, default: 0 },
   balance: { type: Number },
+  paymentMode: { type: String, enum: ['Cash', 'Card', 'Online'], default: 'Cash' },
   
   // Status
-  status: { type: String, enum: ['Placed', 'Preparing', 'Ready', 'Delivered', 'Confirmed'], default: 'Placed' },
+  status: { type: String, enum: ['Placed', 'Preparing', 'Ready', 'Delivered', 'Confirmed', 'Completed', 'Pending Payment'], default: 'Placed' },
   orderType: { type: String, enum: ['Instant', 'Event'], default: 'Instant' },
+  
+  // Team Assignment
+  assignedTeam: {
+    name: { type: String },
+    role: { type: String },
+    phone: { type: String }
+  },
+  eventCompletedAt: { type: Date },
+  
+  // Payment Status
+  paymentStatus: { type: String, enum: ['Pending', 'Partial', 'Paid'], default: 'Pending' },
+  balanceDue: { type: Number },
+  amountReceived: { type: Number, default: 0 },
+  paymentNotes: { type: String },
   
   // Quotation Reference
   quotationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Quotation' },
