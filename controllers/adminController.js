@@ -347,6 +347,52 @@ const getAvailableRoles = async (req, res) => {
   });
 };
 
+// Get user permissions (Admin only)
+const getUserPermissions = async (req, res) => {
+  const { id } = req.params;
+  
+  const user = await User.findById(id).select('customPermissions role');
+  
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+  
+  res.status(StatusCodes.OK).json({
+    success: true,
+    data: {
+      userId: user._id,
+      role: user.role,
+      permissions: user.customPermissions
+    }
+  });
+};
+
+// Update user permissions (Admin only)
+const updateUserPermissions = async (req, res) => {
+  const { id } = req.params;
+  const { customPermissions } = req.body;
+  
+  if (!customPermissions || typeof customPermissions !== 'object') {
+    throw new BadRequestError('Valid permissions object is required');
+  }
+  
+  const user = await User.findByIdAndUpdate(
+    id,
+    { customPermissions },
+    { new: true, runValidators: true }
+  ).select('-password');
+  
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+  
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: 'User permissions updated successfully',
+    data: { user }
+  });
+};
+
 module.exports = {
   getAllUsers,
   getUser,
@@ -357,5 +403,7 @@ module.exports = {
   changeUserRole,
   resetUserPassword,
   getUserStatistics,
-  getAvailableRoles
+  getAvailableRoles,
+  getUserPermissions,
+  updateUserPermissions
 };

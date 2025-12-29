@@ -21,6 +21,10 @@ router.patch('/users/:id/status', asyncHandler(adminController.changeUserStatus)
 router.patch('/users/:id/role', asyncHandler(adminController.changeUserRole));
 router.patch('/users/:id/reset-password', asyncHandler(adminController.resetUserPassword));
 
+// Permission management routes
+router.get('/users/:id/permissions', asyncHandler(adminController.getUserPermissions));
+router.patch('/users/:id/permissions', asyncHandler(adminController.updateUserPermissions));
+
 // Statistics and information routes
 router.get('/statistics/users', asyncHandler(adminController.getUserStatistics));
 router.get('/roles/available', asyncHandler(adminController.getAvailableRoles));

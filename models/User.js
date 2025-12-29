@@ -68,6 +68,15 @@ const userSchema = new mongoose.Schema({
     enum: ['active', 'inactive', 'suspended'],
     default: 'active',
   },
+  customPermissions: {
+    canCreateInstantOrder: { type: Boolean, default: true },
+    canViewInstantOrders: { type: Boolean, default: true },
+    canCreateEnquiry: { type: Boolean, default: true },
+    canViewEnquiries: { type: Boolean, default: true },
+    canViewMenu: { type: Boolean, default: true },
+    canManageQuotations: { type: Boolean, default: true },
+    canViewReports: { type: Boolean, default: true },
+  },
   lastLogin: {
     type: Date,
   },
