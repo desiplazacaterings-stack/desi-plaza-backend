@@ -60,6 +60,14 @@ const orderSchema = new mongoose.Schema({
   
   // Quotation Reference
   quotationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Quotation' },
+  
+  // Agreement Tracking
+  agreementSigned: { type: Boolean, default: false },
+  agreementSignedAt: { type: Date },
+  signedAgreementId: { type: mongoose.Schema.Types.ObjectId, ref: 'SignedAgreement' },
+  
+  // PDF Document
+  hasPDF: { type: Boolean, default: false },
 }, { timestamps: true, strict: false });
 
 module.exports = mongoose.model('Order', orderSchema);

@@ -5,9 +5,17 @@ const { authenticateUser } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/authorization');
 const { asyncHandler } = require('../utils/asyncHandler');
 
-// All routes require authentication and admin role
-router.use(authenticateUser);
-router.use(requireAdmin);
+// Wrap authenticateUser in asyncHandler to catch any errors
+const authMiddleware = asyncHandler(authenticateUser);
+
+// All routes require authentication
+router.use(authMiddleware);
+
+// Permissions route - allow staff to view own permissions, admins to view any
+router.get('/users/:id/permissions', asyncHandler(adminController.getUserPermissions));
+
+// All other routes require admin role
+router.use(asyncHandler(requireAdmin));
 
 // User management routes
 router.get('/users', asyncHandler(adminController.getAllUsers));
@@ -22,7 +30,6 @@ router.patch('/users/:id/role', asyncHandler(adminController.changeUserRole));
 router.patch('/users/:id/reset-password', asyncHandler(adminController.resetUserPassword));
 
 // Permission management routes
-router.get('/users/:id/permissions', asyncHandler(adminController.getUserPermissions));
 router.patch('/users/:id/permissions', asyncHandler(adminController.updateUserPermissions));
 
 // Statistics and information routes

@@ -3,9 +3,28 @@ const { StatusCodes } = require('http-status-codes');
 const { BadRequestError, UnauthenticatedError } = require('../errors');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
+const { mockLogin, mockRegister, mockVerifyToken } = require('../utils/mockData');
+
+// Check if using mock data
+const isMockMode = () => global.USE_MOCK_DATA || false;
 
 // Register a new user
 const register = async (req, res) => {
+  // Use mock data if database is unavailable
+  if (isMockMode()) {
+    const { email, password, name } = req.body;
+    const mockResult = mockRegister(email, password, name);
+    if (!mockResult.success) {
+      throw new BadRequestError(mockResult.error);
+    }
+    return res.status(StatusCodes.CREATED).json({ 
+      success: true,
+      mode: 'mock',
+      message: 'Registered with mock credentials (no database)',
+      data: mockResult.data
+    });
+  }
+
   // First registered user will be an admin
   const isFirstAccount = (await User.countDocuments({})) === 0;
   const role = isFirstAccount ? 'admin' : 'customer';
@@ -55,6 +74,20 @@ const login = async (req, res) => {
     throw new BadRequestError('Please provide email and password');
   }
 
+  // Use mock data if database is unavailable
+  if (isMockMode()) {
+    const mockResult = mockLogin(email, password);
+    if (!mockResult.success) {
+      throw new UnauthenticatedError(mockResult.error);
+    }
+    return res.status(StatusCodes.OK).json({ 
+      success: true,
+      mode: 'mock',
+      message: 'Logged in with mock credentials (no database)',
+      data: mockResult.data
+    });
+  }
+
   const user = await User.findOne({ email }).select('+password');
   
   if (!user) {
@@ -77,6 +110,9 @@ const login = async (req, res) => {
 
   const token = user.createJWT();
   
+  // Ensure customPermissions is initialized with defaults from schema
+  const customPermissions = user.customPermissions || {};
+  
   res.status(StatusCodes.OK).json({ 
     success: true,
     data: { 
@@ -86,7 +122,7 @@ const login = async (req, res) => {
         email: user.email, 
         role: user.role,
         status: user.status,
-        customPermissions: user.customPermissions
+        customPermissions: customPermissions
       },
       token 
     }

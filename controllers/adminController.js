@@ -56,24 +56,32 @@ const getUser = async (req, res) => {
 const createUser = async (req, res) => {
   const { name, email, password, mobile, role, status } = req.body;
   
+  console.log('=== CREATE USER REQUEST ===');
+  console.log('Body:', JSON.stringify(req.body));
+  console.log('Parsed fields:', { name, email, password, mobile, role, status });
+  
   // Validate required fields
   if (!name || !email || !password || !mobile || !role) {
+    console.log('Validation failed - missing fields');
     throw new BadRequestError('Please provide all required fields: name, email, password, mobile, role');
   }
   
   // Validate role
   const validRoles = ['admin', 'staff', 'customer'];
   if (!validRoles.includes(role)) {
+    console.log('Invalid role:', role);
     throw new BadRequestError(`Role must be one of: ${validRoles.join(', ')}`);
   }
   
   // Check if user already exists
   const existingUser = await User.findOne({ email });
   if (existingUser) {
+    console.log('User already exists with email:', email);
     throw new BadRequestError('User with this email already exists');
   }
   
   // Create user
+  console.log('Creating user with data:', { name, email, mobile, role, status: status || 'active' });
   const user = await User.create({
     name,
     email,
@@ -83,6 +91,8 @@ const createUser = async (req, res) => {
     status: status || 'active',
     emailVerified: true // Admin-created users are pre-verified
   });
+  
+  console.log('User created successfully:', user._id);
   
   res.status(StatusCodes.CREATED).json({
     success: true,
@@ -349,22 +359,59 @@ const getAvailableRoles = async (req, res) => {
 
 // Get user permissions (Admin only)
 const getUserPermissions = async (req, res) => {
+  console.log('=== getUserPermissions called ===');
+  console.log('req.user:', req.user);
+  console.log('ID from params:', req.params.id);
+  
   const { id } = req.params;
   
-  const user = await User.findById(id).select('customPermissions role');
-  
-  if (!user) {
-    throw new NotFoundError('User not found');
-  }
-  
-  res.status(StatusCodes.OK).json({
-    success: true,
-    data: {
-      userId: user._id,
-      role: user.role,
-      permissions: user.customPermissions
+  try {
+    // Validate req.user exists
+    if (!req.user) {
+      console.error('req.user is undefined');
+      throw new UnauthorizedError('User authentication failed');
     }
-  });
+    
+    // Validate req.user._id exists
+    if (req.user._id === undefined || req.user._id === null) {
+      console.error('req.user._id is null or undefined:', req.user._id);
+      throw new UnauthorizedError('User authentication failed - missing user ID');
+    }
+    
+    // Convert both to strings for safe comparison
+    const currentUserId = String(req.user._id);
+    const requestedUserId = String(id);
+    
+    console.log('Comparing IDs - current:', currentUserId, 'requested:', requestedUserId, 'role:', req.user.role);
+    
+    if (currentUserId !== requestedUserId && req.user.role !== 'admin') {
+      throw new UnauthorizedError('Access denied. You can only view your own permissions.');
+    }
+    
+    const user = await User.findById(id);
+    
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+    
+    // Ensure customPermissions is always an object, even if null/undefined
+    const customPermissions = user.customPermissions || {};
+    
+    console.log('getUserPermissions - User found:', user._id);
+    console.log('getUserPermissions - customPermissions:', Object.keys(customPermissions));
+    
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: {
+        userId: user._id,
+        role: user.role,
+        customPermissions: customPermissions
+      }
+    });
+  } catch (error) {
+    console.error('getUserPermissions error:', error);
+    throw error;
+  }
 };
 
 // Update user permissions (Admin only)
@@ -376,20 +423,43 @@ const updateUserPermissions = async (req, res) => {
     throw new BadRequestError('Valid permissions object is required');
   }
   
-  const user = await User.findByIdAndUpdate(
-    id,
-    { customPermissions },
-    { new: true, runValidators: true }
-  ).select('-password');
+  // Merge permissions with existing ones instead of replacing
+  const user = await User.findById(id);
   
   if (!user) {
     throw new NotFoundError('User not found');
   }
   
+  // Initialize customPermissions if null/undefined
+  if (!user.customPermissions) {
+    user.customPermissions = {};
+  }
+  
+  // Merge new permissions with existing ones
+  user.customPermissions = {
+    ...user.customPermissions,
+    ...customPermissions
+  };
+  
+  console.log('updateUserPermissions - Merged permissions:', user.customPermissions);
+  
+  await user.save();
+  
+  // Return updated user with all permissions
+  const updatedUser = await User.findById(id);
+  
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'User permissions updated successfully',
-    data: { user }
+    data: { 
+      user: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        customPermissions: updatedUser.customPermissions
+      }
+    }
   });
 };
 

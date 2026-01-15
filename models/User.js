@@ -69,13 +69,80 @@ const userSchema = new mongoose.Schema({
     default: 'active',
   },
   customPermissions: {
+    // Orders Management (Instant Orders)
     canCreateInstantOrder: { type: Boolean, default: true },
     canViewInstantOrders: { type: Boolean, default: true },
+    canEditInstantOrder: { type: Boolean, default: true },
+    canDeleteInstantOrder: { type: Boolean, default: false },
+    canViewOrderDetails: { type: Boolean, default: true },
+    canUpdateOrderStatus: { type: Boolean, default: true },
+
+    // Enquiries Management
     canCreateEnquiry: { type: Boolean, default: true },
     canViewEnquiries: { type: Boolean, default: true },
+    canEditEnquiry: { type: Boolean, default: true },
+    canDeleteEnquiry: { type: Boolean, default: false },
+    canReplyToEnquiry: { type: Boolean, default: true },
+
+    // Quotations Management
+    canCreateQuotation: { type: Boolean, default: true },
+    canViewQuotations: { type: Boolean, default: true },
+    canEditQuotation: { type: Boolean, default: true },
+    canDeleteQuotation: { type: Boolean, default: false },
+    canSendQuotation: { type: Boolean, default: true },
+    canApproveQuotation: { type: Boolean, default: false },
+
+    // Menu Management
     canViewMenu: { type: Boolean, default: true },
-    canManageQuotations: { type: Boolean, default: true },
+    canAddMenuItems: { type: Boolean, default: false },
+    canEditMenuItems: { type: Boolean, default: false },
+    canDeleteMenuItems: { type: Boolean, default: false },
+    canManageMenuCategories: { type: Boolean, default: false },
+    canViewMenuPrices: { type: Boolean, default: true },
+
+    // Payments Management
+    canViewPayments: { type: Boolean, default: true },
+    canRecordPayment: { type: Boolean, default: true },
+    canEditPayment: { type: Boolean, default: false },
+    canDeletePayment: { type: Boolean, default: false },
+    canGenerateInvoices: { type: Boolean, default: false },
+    canViewPaymentReports: { type: Boolean, default: true },
+
+    // Schedules Management
+    canCreateSchedule: { type: Boolean, default: true },
+    canViewSchedules: { type: Boolean, default: true },
+    canEditSchedule: { type: Boolean, default: true },
+    canDeleteSchedule: { type: Boolean, default: false },
+    canCompleteSchedule: { type: Boolean, default: true },
+
+    // Events Management
+    canViewEvents: { type: Boolean, default: true },
+    canCreateEvent: { type: Boolean, default: true },
+    canEditEvent: { type: Boolean, default: true },
+    canDeleteEvent: { type: Boolean, default: false },
+    canAssignTeamToEvent: { type: Boolean, default: false },
+    canCompleteEvent: { type: Boolean, default: true },
+
+    // Reports & Analytics
     canViewReports: { type: Boolean, default: true },
+    canViewSalesReports: { type: Boolean, default: true },
+    canViewCustomerReports: { type: Boolean, default: true },
+    canViewEventReports: { type: Boolean, default: true },
+    canExportReports: { type: Boolean, default: false },
+
+    // User Management
+    canViewUsers: { type: Boolean, default: false },
+    canCreateUser: { type: Boolean, default: false },
+    canEditUser: { type: Boolean, default: false },
+    canDeleteUser: { type: Boolean, default: false },
+    canChangeUserRole: { type: Boolean, default: false },
+    canManageUserPermissions: { type: Boolean, default: false },
+
+    // Settings & Configuration
+    canViewSettings: { type: Boolean, default: false },
+    canEditGeneralSettings: { type: Boolean, default: false },
+    canManageRoles: { type: Boolean, default: false },
+    canViewAuditLogs: { type: Boolean, default: false },
   },
   lastLogin: {
     type: Date,
@@ -108,9 +175,14 @@ userSchema.methods.createJWT = function() {
     permissions: rolePermissions[this.role] || {}
   };
   
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error('JWT_SECRET environment variable is not set');
+  }
+  
   return jwt.sign(
     payload,
-    process.env.JWT_SECRET || 'your-secret-key',
+    jwtSecret,
     { expiresIn: process.env.JWT_LIFETIME || '30d' }
   );
 };

@@ -1,31 +1,19 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Async error handler wrapper
-const asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
-};
-
-// Error handler
-const errorHandlerMiddleware = (err, req, res, next) => {
-  console.error(err);
-  const statusCode = err.statusCode || 500;
-  const msg = err.message || 'Something went wrong, please try again later';
-  res.status(statusCode).json({ 
-    success: false,
-    error: msg 
-  });
-};
+// ============================================
+// MIDDLEWARE
+// ============================================
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Security headers
 app.use((req, res, next) => {
@@ -35,83 +23,185 @@ app.use((req, res, next) => {
   next();
 });
 
-// MongoDB connection
-mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/desi_plaza', {
-  serverSelectionTimeoutMS: 10000,
-  socketTimeoutMS: 45000
-})
-.then(() => {
-  console.log('MongoDB connected');
-  // Start server after DB connection
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-})
-.catch(err => console.log(err));
-
-// Routes
-const authRoutes = require('./routes/auth');
-const adminRoutes = require('./routes/admin');
-
-// Public routes
-app.use('/api/auth', authRoutes);
-
-
-const itemRoutes = require('./routes/items');
-
-// Debug route to inspect all items in DB
-app.get('/api/items/debug', async (req, res) => {
+// ============================================
+// DATABASE CONNECTION
+// ============================================
+const connectDB = async () => {
   try {
-    const Item = require('./models/Item');
-    const items = await Item.find();
-    res.json(items);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const mongoURI = process.env.MONGO_URI;
+    if (!mongoURI) {
+      throw new Error('MONGO_URI environment variable is not defined');
+    }
+
+    const conn = await mongoose.connect(mongoURI, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 10000,
+      maxPoolSize: 10,
+      minPoolSize: 5,
+      maxIdleTimeMS: 30000,
+      bufferCommands: false,
+      retryWrites: true,
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+
+    console.log(`✓ MongoDB Connected: ${conn.connection.host}`);
+    
+    // Connection event handlers
+    mongoose.connection.on('disconnected', () => {
+      console.warn('⚠️  MongoDB disconnected - attempting to reconnect...');
+    });
+
+    mongoose.connection.on('reconnected', () => {
+      console.log('✓ MongoDB reconnected');
+    });
+
+    mongoose.connection.on('error', (err) => {
+      console.error('✗ MongoDB error:', err.message);
+    });
+
+    return conn;
+  } catch (error) {
+    console.error(`✗ MongoDB Connection Error: ${error.message}`);
+    console.log('\n⚠️  MongoDB is not available. Running in mock mode for development.\n');
+    // Set a flag to use mock data instead of database
+    global.USE_MOCK_DATA = true;
   }
-});
+};
 
-app.use('/api/items', itemRoutes);
+// ============================================
+// ROUTES
+// ============================================
 
-const enquiryRoutes = require('./routes/enquiries');
-const quotationRoutes = require('./routes/quotations');
-app.use('/api/enquiries', enquiryRoutes);
-app.use('/api/quotations', quotationRoutes);
-
-
-const orderRoutes = require('./routes/orders');
-app.use('/api/orders', orderRoutes);
-
-// Schedules route
-const scheduleRoutes = require('./routes/schedules');
-app.use('/api/schedules', scheduleRoutes);
-
-// Admin routes
-app.use('/api/admin', adminRoutes);
-
-// Error handling middleware
-app.use(errorHandlerMiddleware);
-
+// Root endpoint
 app.get('/', (req, res) => {
-  res.send('Catering Backend API');
+  res.status(200).json({
+    message: 'Desi Plaza Caterings Backend API',
+    version: '1.0.0',
+    status: 'running',
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Health check endpoint
-app.get('/ping', async (req, res) => {
-  try {
-    await mongoose.connection.db.admin().ping();
-    res.status(200).json({ status: 'ok', timestamp: new Date() });
-  } catch (err) {
-    res.status(500).json({ status: 'error', message: 'Database connection failed' });
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// Import route modules
+const authRouter = require('./routes/auth');
+const adminRouter = require('./routes/admin');
+const enquiriesRouter = require('./routes/enquiries');
+const ordersRouter = require('./routes/orders');
+const quotationsRouter = require('./routes/quotations');
+const itemsRouter = require('./routes/items');
+const schedulesRouter = require('./routes/schedules');
+const agreementsRouter = require('./routes/agreements');
+
+// Register routes
+app.use('/api/auth', authRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/enquiries', enquiriesRouter);
+app.use('/api/orders', ordersRouter);
+app.use('/api/quotations', quotationsRouter);
+app.use('/api/items', itemsRouter);
+app.use('/api/schedules', schedulesRouter);
+app.use('/api/agreements', agreementsRouter);
+
+// ============================================
+// ERROR HANDLING
+// ============================================
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: `Route ${req.originalUrl} not found`,
+    status: 404
+  });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Error:', err.message);
+  if (process.env.NODE_ENV !== 'production') {
+    console.error('Stack:', err.stack);
   }
+
+  const status = err.statusCode || err.status || 500;
+  const message = err.message || 'Internal Server Error';
+
+  res.status(status).json({
+    error: {
+      status,
+      message,
+      ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
+    }
+  });
 });
 
-console.log('DEBUG: This is the backend/server.js file running');
+// ============================================
+// SERVER STARTUP
+// ============================================
 
-// Global error handlers
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+const PORT = process.env.PORT || 3000;
+const NODE_ENV = process.env.NODE_ENV || 'development';
+
+// Connect to database and start server
+connectDB().then(() => {
+  const server = app.listen(PORT, () => {
+    console.log('\n' + '='.repeat(50));
+    console.log('🍽️  DESI PLAZA CATERINGS BACKEND');
+    console.log('='.repeat(50));
+    console.log(`✓ Server running on port ${PORT}`);
+    console.log(`✓ Environment: ${NODE_ENV}`);
+    console.log(`✓ Started: ${new Date().toLocaleString()}`);
+    console.log('='.repeat(50) + '\n');
+  });
+
+  // Handle port errors
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`\n✗ Port ${PORT} is already in use`);
+      console.error('Please close other applications or change PORT in .env\n');
+      process.exit(1);
+    }
+    throw err;
+  });
+
+  // ============================================
+  // GRACEFUL SHUTDOWN
+  // ============================================
+
+  process.on('SIGINT', () => {
+    console.log('\n\n⚠️  Shutting down gracefully...');
+    server.close(() => {
+      console.log('✓ Server closed');
+      mongoose.connection.close();
+      console.log('✓ Database connection closed');
+      process.exit(0);
+    });
+  });
+
+  process.on('unhandledRejection', (err) => {
+    console.error('Unhandled Rejection:', err);
+    process.exit(1);
+  });
+
+  process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    process.exit(1);
+  });
+
+}).catch(err => {
+  console.error('Failed to start server:', err.message);
+  process.exit(1);
 });
 
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception thrown:', err);
-});
+module.exports = app;

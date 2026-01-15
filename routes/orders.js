@@ -64,6 +64,28 @@ router.patch('/:id/complete', async (req, res) => {
   }
 });
 
+// Cancel event
+router.patch('/:id/cancel', async (req, res) => {
+  try {
+    const updatedOrder = await Order.findByIdAndUpdate(
+      req.params.id,
+      {
+        status: 'Cancelled',
+        cancelledAt: new Date()
+      },
+      { new: true }
+    );
+    
+    if (!updatedOrder) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    
+    res.json(updatedOrder);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
 // Update order status
 router.patch('/:id', async (req, res) => {
   try {
