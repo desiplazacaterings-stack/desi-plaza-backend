@@ -85,4 +85,22 @@ router.post('/cache/clear', (req, res) => {
   res.json({ message: 'Cache cleared' });
 });
 
+// Diagnostic endpoint to check database status
+router.get('/diagnostic/status', async (req, res) => {
+  try {
+    const dbStatus = mongoose.connection.readyState;
+    const dbStatusMap = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+    const itemCount = await Item.countDocuments();
+    
+    res.json({
+      database: dbStatusMap[dbStatus],
+      itemsInDatabase: itemCount,
+      cacheStatus: itemsCache ? `${itemsCache.length} items cached` : 'empty',
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

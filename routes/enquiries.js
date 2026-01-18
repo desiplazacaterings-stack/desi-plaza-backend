@@ -2,11 +2,18 @@ const express = require('express');
 const router = express.Router();
 const Enquiry = require('../models/Enquiry');
 const multer = require('multer');
+const { authenticateUser } = require('../middleware/auth');
 const upload = multer();
 
-// GET: Retrieve all enquiries (to check saved data)
-router.get('/', async (req, res) => {
+// GET: Retrieve all enquiries (requires authentication)
+router.get('/', authenticateUser, async (req, res) => {
   try {
+    // Check permission
+    if (!req.user.customPermissions?.canViewEnquiries && req.user.role !== 'admin') {
+      return res.status(403).json({ 
+        message: 'You do not have permission to view enquiries' 
+      });
+    }
     // Fetch all enquiries and sort by newest first
     const enquiries = await Enquiry.find().sort({ createdAt: -1 });
     res.json(enquiries);

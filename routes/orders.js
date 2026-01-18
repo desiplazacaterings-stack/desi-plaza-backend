@@ -89,11 +89,14 @@ router.patch('/:id/cancel', async (req, res) => {
 // Update order status
 router.patch('/:id', async (req, res) => {
   try {
-    // If amountReceived is being updated, recalculate payment status
+    // If amountReceived is being updated, recalculate payment status and balance
     if (req.body.amountReceived !== undefined) {
       const order = await Order.findById(req.params.id);
       const totalAmount = order.totalAmount || 0;
       const amountReceived = req.body.amountReceived;
+      
+      // Calculate the new balance due
+      const balanceDue = Math.max(0, totalAmount - amountReceived);
       
       // Determine payment status based on new amount received
       let paymentStatus = 'Pending';
@@ -104,6 +107,7 @@ router.patch('/:id', async (req, res) => {
       }
       
       req.body.paymentStatus = paymentStatus;
+      req.body.balanceDue = balanceDue;
     }
     
     const updatedOrder = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true });

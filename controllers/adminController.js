@@ -114,13 +114,20 @@ const createUser = async (req, res) => {
 // Update user (Admin only)
 const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, email, mobile, role, status } = req.body;
+  const { name, email, mobile, role, status, password } = req.body;
+  
+  console.log('=== UPDATE USER REQUEST ===');
+  console.log('User ID:', id);
+  console.log('Body:', JSON.stringify(req.body));
+  console.log('Password provided:', !!password);
   
   const user = await User.findById(id);
   
   if (!user) {
     throw new NotFoundError('User not found');
   }
+  
+  console.log('Current user status:', { name: user.name, email: user.email });
   
   // Update allowed fields
   if (name) user.name = name;
@@ -140,6 +147,17 @@ const updateUser = async (req, res) => {
     user.status = status;
   }
   
+  // Handle password update
+  if (password) {
+    console.log('Password update requested, length:', password.length);
+    if (password.length < 8) {
+      throw new BadRequestError('Password must be at least 8 characters long');
+    }
+    user.password = password;
+    user.passwordChangedAt = Date.now();
+    console.log('Password has been updated and marked as modified');
+  }
+  
   // Email update (only if different from current)
   if (email && email !== user.email) {
     const existingUser = await User.findOne({ email });
@@ -149,7 +167,9 @@ const updateUser = async (req, res) => {
     user.email = email;
   }
   
+  console.log('Saving user...');
   await user.save();
+  console.log('User saved successfully');
   
   res.status(StatusCodes.OK).json({
     success: true,
