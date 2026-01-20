@@ -1,0 +1,54 @@
+# Docker Build Context Exclusions
+# These files/folders are NOT needed in the Docker build
+
+# Node.js
+node_modules/
+npm-debug.log*
+npm-err.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Version Control
+.git
+.gitignore
+.github/
+
+# Build/Distribution
+dist/
+build/
+.next/
+out/
+
+# IDE/Editor
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Testing
+.nyc_output/
+coverage/
+.mocha/
+
+# Logs
+logs/
+*.log
+
+# OS
+Thumbs.db
+desktop.ini
+
+# Docker (avoid recursive builds)
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# CI/CD
+.gitlab-ci.yml
+.github/

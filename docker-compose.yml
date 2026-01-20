@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # MongoDB Database
   mongodb:
-    image: mongo:latest
+    image: mongo:7-alpine
     container_name: desi-plaza-mongodb
     restart: always
     ports:
@@ -22,12 +22,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # Backend API
   backend:
     build:
       context: .
-      dockerfile: Dockerfile.backend
+      dockerfile: Dockerfile
     container_name: desi-plaza-backend
     restart: always
     ports:
@@ -49,6 +54,11 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # Frontend Web App
   frontend:
@@ -67,7 +77,12 @@ services:
     networks:
       - desi-plaza-network
     volumes:
-      - ./ssl:/etc/nginx/ssl:ro  # For SSL certificates (optional)
+      - ./ssl:/etc/nginx/ssl:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   desi-plaza-network:
