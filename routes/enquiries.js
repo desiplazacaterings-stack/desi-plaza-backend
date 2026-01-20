@@ -58,4 +58,31 @@ router.post('/', upload.none(), async (req, res) => {
   }
 });
 
+// PATCH: Cancel an enquiry
+router.patch('/:id/cancel', authenticateUser, async (req, res) => {
+  try {
+    const { reason } = req.body;
+    
+    const enquiry = await Enquiry.findByIdAndUpdate(
+      req.params.id,
+      {
+        status: 'Cancelled',
+        cancellationReason: reason || '',
+        cancelledAt: new Date()
+      },
+      { new: true }
+    );
+    
+    if (!enquiry) {
+      return res.status(404).json({ message: 'Enquiry not found' });
+    }
+    
+    console.log('Enquiry cancelled:', enquiry._id);
+    res.json({ message: 'Enquiry cancelled successfully', enquiry });
+  } catch (err) {
+    console.error('Error cancelling enquiry:', err);
+    res.status(400).json({ message: err.message });
+  }
+});
+
 module.exports = router;

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const QuotationSchema = new mongoose.Schema({
   quotationId: { type: String, required: true, unique: true },
+  enquiryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Enquiry' },
   enquiry: {
     customerName: String,
     mobile: String,
@@ -21,6 +22,14 @@ const QuotationSchema = new mongoose.Schema({
       category: String
     }
   ],
+  subtotal: { type: Number, default: 0 },
+  salesTaxRate: { type: Number, default: 0 },
+  salesTax: { type: Number, default: 0 },
+  serviceChargeRate: { type: Number, default: 0 },
+  serviceCharge: { type: Number, default: 0 },
+  labourCharges: { type: Number, default: 0 },
+  discount: { type: Number, default: 0 },
+  discountAmount: { type: Number, default: 0 },
   total: Number,
   status: { type: String, default: 'Pending' },
   createdAt: { type: Date, default: Date.now }

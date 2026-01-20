@@ -117,4 +117,42 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
+// Short close an order (close event with reduced payment)
+router.patch('/:id/short-close', async (req, res) => {
+  try {
+    const { finalAmount, reason } = req.body;
+    
+    if (!finalAmount || finalAmount < 0) {
+      return res.status(400).json({ message: 'Please provide a valid final amount' });
+    }
+
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const shortCloseAmount = (order.totalAmount || 0) - finalAmount;
+
+    const updatedOrder = await Order.findByIdAndUpdate(
+      req.params.id,
+      {
+        isShortClosed: true,
+        shortCloseAmount: shortCloseAmount,
+        shortCloseReason: reason || '',
+        shortCloseAt: new Date(),
+        amountReceived: finalAmount,
+        paymentStatus: 'Short Closed',
+        status: 'Completed'
+      },
+      { new: true }
+    );
+
+    console.log('Order short closed:', updatedOrder._id);
+    res.json({ message: 'Order short closed successfully', order: updatedOrder });
+  } catch (err) {
+    console.error('Error short closing order:', err);
+    res.status(400).json({ message: err.message });
+  }
+});
+
 module.exports = router;

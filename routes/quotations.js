@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Quotation = require('../models/Quotation');
+const Enquiry = require('../models/Enquiry');
 const { authenticateUser } = require('../middleware/auth');
 
 // GET all quotations (requires authentication + viewQuotations permission)
@@ -31,10 +32,26 @@ router.post('/', async (req, res) => {
     if (!req.body.enquiry.mobile && req.body.mobile) {
       req.body.enquiry.mobile = req.body.mobile;
     }
+    
     const quotation = new Quotation(req.body);
     await quotation.save();
+    
+    // If enquiryId is provided, update the enquiry's quotationStatus
+    if (req.body.enquiryId) {
+      console.log('Updating enquiry status for enquiryId:', req.body.enquiryId);
+      const updatedEnquiry = await Enquiry.findByIdAndUpdate(
+        req.body.enquiryId,
+        { quotationStatus: 'Quotation Generated' },
+        { new: true }
+      );
+      console.log('Updated enquiry:', updatedEnquiry);
+    } else {
+      console.log('No enquiryId provided in quotation request');
+    }
+    
     res.status(201).json(quotation);
   } catch (err) {
+    console.error('Error creating quotation:', err);
     res.status(400).json({ message: err.message });
   }
 });

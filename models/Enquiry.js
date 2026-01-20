@@ -9,6 +9,10 @@ const enquirySchema = new mongoose.Schema({
   location: { type: String },
   guests: { type: String },
   notes: { type: String },
+  quotationStatus: { type: String, default: 'Pending', enum: ['Pending', 'Quotation Generated'] },
+  status: { type: String, default: 'Active', enum: ['Active', 'Cancelled'] },
+  cancellationReason: { type: String, default: '' },
+  cancelledAt: { type: Date, default: null },
   createdAt: {
     type: Date,
     default: Date.now

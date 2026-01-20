@@ -53,10 +53,14 @@ const orderSchema = new mongoose.Schema({
   eventCompletedAt: { type: Date },
   
   // Payment Status
-  paymentStatus: { type: String, enum: ['Pending', 'Partial', 'Paid'], default: 'Pending' },
+  paymentStatus: { type: String, enum: ['Pending', 'Partial', 'Paid', 'Short Closed'], default: 'Pending' },
   balanceDue: { type: Number },
   amountReceived: { type: Number, default: 0 },
   paymentNotes: { type: String },
+  isShortClosed: { type: Boolean, default: false },
+  shortCloseAmount: { type: Number, default: 0 },
+  shortCloseReason: { type: String, default: '' },
+  shortCloseAt: { type: Date, default: null },
   
   // Quotation Reference
   quotationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Quotation' },
