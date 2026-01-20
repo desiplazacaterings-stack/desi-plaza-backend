@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   # MongoDB Database
   mongodb:
-    image: mongo:7-alpine
+    image: mongo:latest
     container_name: desi-plaza-mongodb
     restart: always
     ports:
