@@ -31,7 +31,7 @@ services:
   # Backend API
   backend:
     build:
-      context: .
+      context: https://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@github.com/desiplazacaterings-stack/desi-plaza-backend.git
       dockerfile: Dockerfile
     container_name: desi-plaza-backend
     restart: always
@@ -63,8 +63,8 @@ services:
   # Frontend Web App
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.frontend
+      context: https://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@github.com/desiplazacaterings-stack/desi-plaza-frontend.git
+      dockerfile: Dockerfile
     container_name: desi-plaza-frontend
     restart: always
     ports:
