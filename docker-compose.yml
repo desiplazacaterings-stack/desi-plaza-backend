@@ -1,8 +1,10 @@
+version: '3.8'
+
 services:
-  # Backend API (using MongoDB Atlas cloud database)
+  # Backend API
   backend:
     build:
-      context: .
+      context: https://github.com/desiplazacaterings-stack/desi-plaza-backend.git
       dockerfile: Dockerfile
     container_name: desi-plaza-backend
     restart: always
@@ -16,7 +18,6 @@ services:
       JWT_EXPIRE: ${JWT_EXPIRE:-30d}
       API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
       CORS_ORIGIN: ${CORS_ORIGIN:-*}
-    depends_on: []
     networks:
       - desi-plaza-network
     healthcheck:
@@ -25,6 +26,28 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Frontend Web App
+  frontend:
+    build:
+      context: https://github.com/desiplazacaterings-stack/desi-plaza-frontend.git
+      dockerfile: Dockerfile
+    container_name: desi-plaza-frontend
+    restart: always
+    ports:
+      - "8080:80"
+      - "8443:443"
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+    networks:
+      - desi-plaza-network
+    volumes:
+      - ./ssl:/etc/nginx/ssl:ro
     logging:
       driver: "json-file"
       options:
