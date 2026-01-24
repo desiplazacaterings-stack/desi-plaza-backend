@@ -9,12 +9,13 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NODE_ENV: production
-      PORT: 3000
-      MONGODB_URI: ${MONGODB_URI:-mongodb+srv://desiplaza_admin:AkH2jAWi5iY0zvCb@cluster0.d4gnea3.mongodb.net/desiplaza?retryWrites=true&w=majority}
-      JWT_SECRET: ${JWT_SECRET:-desi_plaza_secret_key_2024_secure}
-      JWT_LIFETIME: ${JWT_LIFETIME:-30d}
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      MONGODB_URI: ${MONGODB_URI}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRE: ${JWT_EXPIRE:-30d}
       API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
     depends_on: []
     networks:
       - desi-plaza-network
@@ -29,30 +30,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-
-  # Frontend Web App (deploy separately)
-  # frontend:
-  #   build:
-  #     context: ../frontend
-  #     dockerfile: Dockerfile
-  #   container_name: desi-plaza-frontend
-  #   restart: always
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   environment:
-  #     VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
-  #   depends_on:
-  #     - backend
-  #   networks:
-  #     - desi-plaza-network
-  #   volumes:
-  #     - ./ssl:/etc/nginx/ssl:ro
-  #   logging:
-  #     driver: "json-file"
-  #     options:
-  #       max-size: "10m"
-  #       max-file: "3"
 
 networks:
   desi-plaza-network:
