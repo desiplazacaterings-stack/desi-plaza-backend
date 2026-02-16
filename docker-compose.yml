@@ -8,14 +8,8 @@ services:
     restart: always
     ports:
       - "3000:3000"
-    environment:
-      NODE_ENV: ${NODE_ENV:-production}
-      PORT: ${PORT:-3000}
-      MONGODB_URI: ${MONGODB_URI}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRE: ${JWT_EXPIRE:-30d}
-      API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
-      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+    env_file:
+      - .env
     networks:
       - desi-plaza-network
     healthcheck:
