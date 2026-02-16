@@ -1,0 +1,22 @@
+2026-02-16T11:14:43.669962 Project directory: /docker/desi-plaza-backend
+2026-02-16T11:14:43.670471 Pulling project images
+2026-02-16T11:14:43.671085 ------------------------------
+2026-02-16T11:14:43.717847 time="2026-02-16T11:14:43Z" level=warning msg="The \"MONGODB_URI\" variable is not set. Defaulting to a blank string."
+2026-02-16T11:14:43.727348 time="2026-02-16T11:14:43Z" level=warning msg="/docker/desi-plaza-backend/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+2026-02-16T11:14:43.759559  backend Skipped No image to be pulled
+2026-02-16T11:14:43.759639  frontend Skipped No image to be pulled
+2026-02-16T11:14:43.764952 ------------------------------
+2026-02-16T11:14:43.765066 Deploying project
+2026-02-16T11:14:43.765700 ------------------------------
+2026-02-16T11:14:43.819021 time="2026-02-16T11:14:43Z" level=warning msg="The \"MONGODB_URI\" variable is not set. Defaulting to a blank string."
+2026-02-16T11:14:43.829308 time="2026-02-16T11:14:43Z" level=warning msg="/docker/desi-plaza-backend/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+2026-02-16T11:14:43.887985  Container desi-plaza-backend Recreate 
+2026-02-16T11:14:43.888176  Container desi-plaza-frontend Recreate 
+2026-02-16T11:14:44.314998  Container desi-plaza-frontend Recreated 
+2026-02-16T11:14:44.772007  Container desi-plaza-backend Recreated 
+2026-02-16T11:14:44.793519  Container desi-plaza-frontend Starting 
+2026-02-16T11:14:44.793689  Container desi-plaza-backend Starting 
+2026-02-16T11:14:45.045369  Container desi-plaza-frontend Started 
+2026-02-16T11:14:45.097390  Container desi-plaza-backend Started 
+2026-02-16T11:14:45.104179 ------------------------------
+2026-02-16T11:14:45.104225 Project deployed successfully
