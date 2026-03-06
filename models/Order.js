@@ -38,7 +38,7 @@ const orderSchema = new mongoose.Schema({
   totalAmount: { type: Number },
   advance: { type: Number, default: 0 },
   balance: { type: Number },
-  paymentMode: { type: String, enum: ['Cash', 'Card', 'Online'], default: 'Cash' },
+  paymentMode: { type: String, enum: ['Cash', 'Card', 'Cheque'], default: 'Cash' },
   
   // Status field - tracks order workflow state
   status: { type: String, enum: ['Placed', 'Preparing', 'Ready', 'Delivered', 'Confirmed', 'Completed', 'Pending Payment', 'Cancelled'], default: 'Placed' },
